@@ -19,8 +19,10 @@ module OpenTelemetry
           # Contains ActiveRecord::Querying to be patched
           module ClassMethods
             def find_by_sql(sql, binds = [], preparable: nil, &block)
-              tracer.in_span("#{self}.find_by_sql") do
-                super
+              tracer.in_span("#{self}.find_by_sql") do |span|
+                result = super
+                span.add_attributes({ "rows_returned" => result.length })
+                result
               end
             end
 
